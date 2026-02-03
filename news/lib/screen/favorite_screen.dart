@@ -5,6 +5,7 @@ import '../providers/news_provider.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/common/news_card.dart';
 import '../widgets/my_drawer.dart';
+import 'news_detail_screen.dart';
 
 class FavoriteScreen extends StatelessWidget {
   static const String routeName = '/favorites';
@@ -37,6 +38,11 @@ class FavoriteScreen extends StatelessWidget {
                   category: news.category,
                   title: news.title,
                   date: news.date,
+                  onTap: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(NewsDetailScreen.routeName, arguments: news);
+                  },
                   showFavorite: true,
                   isFavorite: news.isFavorite,
                   onFavoriteTap: () {
