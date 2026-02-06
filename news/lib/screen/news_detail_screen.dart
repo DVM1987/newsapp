@@ -6,8 +6,6 @@ import '../widgets/news_detail/news_detail_header.dart';
 import '../widgets/news_detail/news_detail_more_button.dart';
 
 class NewsDetailScreen extends StatelessWidget {
-  static const String routeName = '/news-detail';
-
   const NewsDetailScreen({super.key});
 
   @override

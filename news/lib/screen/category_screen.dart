@@ -4,8 +4,6 @@ import '../widgets/category/category_app_bar.dart';
 import '../widgets/category/category_list.dart';
 
 class CategoryScreen extends StatelessWidget {
-  static const String routeName = '/category';
-
   const CategoryScreen({super.key});
 
   @override

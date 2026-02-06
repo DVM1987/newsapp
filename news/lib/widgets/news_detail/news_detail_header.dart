@@ -21,7 +21,7 @@ class NewsDetailHeader extends StatelessWidget {
           top: 40,
           left: 16,
           child: CircleAvatar(
-            backgroundColor: Colors.black.withOpacity(0.3),
+            backgroundColor: Colors.black.withValues(alpha: 0.3),
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),

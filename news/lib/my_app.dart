@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'apps/routers/router_name.dart';
 import 'providers/news_provider.dart';
+import 'providers/settings_provider.dart';
 import 'screen/category_screen.dart';
 import 'screen/favorite_screen.dart';
 import 'screen/home_screen.dart';
+import 'screen/login_screen.dart';
 import 'screen/news_detail_screen.dart';
 import 'screen/settings_screen.dart';
 import 'screen/splash_screen.dart';
@@ -14,8 +17,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => NewsProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (ctx) => NewsProvider()),
+        ChangeNotifierProvider(create: (ctx) => SettingsProvider()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'News App',
@@ -23,14 +29,15 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFFBA4B)),
           useMaterial3: true,
         ),
-        initialRoute: SplashScreen.routeName,
+        initialRoute: RouterName.splash,
         routes: {
-          SplashScreen.routeName: (context) => const SplashScreen(),
-          HomeScreen.routeName: (context) => const HomeScreen(),
-          CategoryScreen.routeName: (context) => const CategoryScreen(),
-          FavoriteScreen.routeName: (context) => const FavoriteScreen(),
-          NewsDetailScreen.routeName: (context) => const NewsDetailScreen(),
-          SettingsScreen.routeName: (context) => const SettingsScreen(),
+          RouterName.splash: (context) => const SplashScreen(),
+          RouterName.login: (context) => const LoginScreen(),
+          RouterName.home: (context) => const HomeScreen(),
+          RouterName.category: (context) => const CategoryScreen(),
+          RouterName.favorites: (context) => const FavoriteScreen(),
+          RouterName.newsDetail: (context) => const NewsDetailScreen(),
+          RouterName.settings: (context) => const SettingsScreen(),
         },
       ),
     );

@@ -2,10 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-import '../constants/app_colors.dart';
-import '../screen/favorite_screen.dart';
-import '../screen/home_screen.dart';
-import '../screen/settings_screen.dart';
+import '../apps/constants/app_colors.dart';
+import '../apps/routers/router_name.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
@@ -25,7 +23,7 @@ class MyDrawer extends StatelessWidget {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: 5,
             ),
@@ -45,7 +43,7 @@ class MyDrawer extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -78,7 +76,7 @@ class MyDrawer extends StatelessWidget {
                     letterSpacing: 1.2,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.8),
+                        color: Colors.black.withValues(alpha: 0.8),
                         offset: const Offset(2, 4),
                         blurRadius: 8,
                       ),
@@ -92,37 +90,31 @@ class MyDrawer extends StatelessWidget {
             _buildDrawerItem(
               context: context,
               title: 'Trang Chủ',
-              color: currentRoute == HomeScreen.routeName
-                  ? activeColor
-                  : whiteColor,
+              color: currentRoute == RouterName.home ? activeColor : whiteColor,
               onTap: () {
-                Navigator.of(
-                  context,
-                ).pushReplacementNamed(HomeScreen.routeName);
+                Navigator.of(context).pushReplacementNamed(RouterName.home);
               },
             ),
             _buildDrawerItem(
               context: context,
               title: 'Yêu Thích',
-              color: currentRoute == FavoriteScreen.routeName
+              color: currentRoute == RouterName.favorites
                   ? activeColor
                   : whiteColor,
               onTap: () {
                 Navigator.of(
                   context,
-                ).pushReplacementNamed(FavoriteScreen.routeName);
+                ).pushReplacementNamed(RouterName.favorites);
               },
             ),
             _buildDrawerItem(
               context: context,
               title: 'Setting',
-              color: currentRoute == SettingsScreen.routeName
+              color: currentRoute == RouterName.settings
                   ? activeColor
                   : whiteColor,
               onTap: () {
-                Navigator.of(
-                  context,
-                ).pushReplacementNamed(SettingsScreen.routeName);
+                Navigator.of(context).pushReplacementNamed(RouterName.settings);
               },
             ),
           ],
@@ -147,7 +139,7 @@ class MyDrawer extends StatelessWidget {
           color: color,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               offset: const Offset(1, 2),
               blurRadius: 4,
             ),

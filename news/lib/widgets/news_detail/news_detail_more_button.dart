@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../constants/app_colors.dart';
+import '../../apps/constants/app_colors.dart';
 
 class NewsDetailMoreButton extends StatelessWidget {
   const NewsDetailMoreButton({super.key});
