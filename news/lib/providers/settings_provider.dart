@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/category.dart';
+
 class CategoryItem {
-  final String title;
+  final Category category;
   final Color color;
   bool isActive;
 
   CategoryItem({
-    required this.title,
+    required this.category,
     required this.color,
     this.isActive = false,
   });
+
+  String get title => category.name;
 }
 
 class SettingsProvider with ChangeNotifier {
@@ -41,7 +45,12 @@ class SettingsProvider with ChangeNotifier {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         // 2. Extract items from the 'data' field
-        final List<dynamic> items = responseData['data'] ?? [];
+        final List<dynamic> data = responseData['data'] ?? [];
+
+        // Convert to Category objects
+        final List<Category> apiCategories = data
+            .map((item) => Category.fromJson(item))
+            .toList();
 
         // 3. Load active states from SharedPreferences
         final prefs = await SharedPreferences.getInstance();
@@ -60,13 +69,13 @@ class SettingsProvider with ChangeNotifier {
           const Color(0xFF8DAAB2),
         ];
 
-        _categories = items.asMap().entries.map((entry) {
+        _categories = apiCategories.asMap().entries.map((entry) {
           final index = entry.key;
-          final name = entry.value['name'] as String;
+          final category = entry.value;
           return CategoryItem(
-            title: name,
+            category: category,
             color: colors[index % colors.length],
-            isActive: activeCategories.contains(name),
+            isActive: activeCategories.contains(category.name),
           );
         }).toList();
       } else {
