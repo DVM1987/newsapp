@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CategoryItem {
@@ -32,39 +32,46 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Read JSON file from assets
-      final String jsonString = await rootBundle.loadString('api/API.json');
-      final Map<String, dynamic> data = json.decode(jsonString);
+      // 1. Fetch data from remote API
+      final response = await http.get(
+        Uri.parse('https://apiforlearning.zendvn.com/api/v2/categories_news'),
+      );
 
-      // 2. Extract item names from Postman collection
-      final List<dynamic> items = data['item'] ?? [];
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
 
-      // 3. Load active states from SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final List<String> activeCategories =
-          prefs.getStringList('active_categories') ?? [];
+        // 2. Extract items from the 'data' field
+        final List<dynamic> items = responseData['data'] ?? [];
 
-      // 4. Create CategoryItem list with colors
-      final List<Color> colors = [
-        const Color(0xFFFB8484),
-        const Color(0xFF74BDCB),
-        const Color(0xFFFFBD59),
-        const Color(0xFF7B61FF),
-        const Color(0xFFD470FF),
-        const Color(0xFFFFC045),
-        const Color(0xFFA5D65A),
-        const Color(0xFF8DAAB2),
-      ];
+        // 3. Load active states from SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final List<String> activeCategories =
+            prefs.getStringList('active_categories') ?? [];
 
-      _categories = items.asMap().entries.map((entry) {
-        final index = entry.key;
-        final name = entry.value['name'] as String;
-        return CategoryItem(
-          title: name,
-          color: colors[index % colors.length],
-          isActive: activeCategories.contains(name),
-        );
-      }).toList();
+        // 4. Create CategoryItem list with colors
+        final List<Color> colors = [
+          const Color(0xFFFB8484),
+          const Color(0xFF74BDCB),
+          const Color(0xFFFFBD59),
+          const Color(0xFF7B61FF),
+          const Color(0xFFD470FF),
+          const Color(0xFFFFC045),
+          const Color(0xFFA5D65A),
+          const Color(0xFF8DAAB2),
+        ];
+
+        _categories = items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final name = entry.value['name'] as String;
+          return CategoryItem(
+            title: name,
+            color: colors[index % colors.length],
+            isActive: activeCategories.contains(name),
+          );
+        }).toList();
+      } else {
+        debugPrint('Failed to load categories: ${response.statusCode}');
+      }
     } catch (e) {
       debugPrint('Error loading settings: $e');
     } finally {
