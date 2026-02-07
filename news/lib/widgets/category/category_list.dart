@@ -8,9 +8,14 @@ import '../../providers/news_provider.dart';
 import '../common/news_card.dart';
 
 class CategoryList extends StatefulWidget {
-  final String category;
+  final String categoryTitle;
+  final int categoryId;
 
-  const CategoryList({super.key, required this.category});
+  const CategoryList({
+    super.key,
+    required this.categoryTitle,
+    required this.categoryId,
+  });
 
   @override
   State<CategoryList> createState() => _CategoryListState();
@@ -27,7 +32,7 @@ class _CategoryListState extends State<CategoryList> {
       Provider.of<NewsProvider>(
         context,
         listen: false,
-      ).loadCategory(widget.category);
+      ).loadCategory(widget.categoryId);
     });
   }
 
@@ -55,7 +60,7 @@ class _CategoryListState extends State<CategoryList> {
     final newsItems = newsProvider.isCategoryLoading
         ? newsProvider.dummyItems
         : newsProvider.items
-              .where((item) => item.category == widget.category)
+              .where((item) => item.categoryId == widget.categoryId)
               .toList();
 
     return RefreshIndicator(
@@ -77,21 +82,21 @@ class _CategoryListState extends State<CategoryList> {
                 ),
               );
             }
-            final news = newsItems[index];
+            final article = newsItems[index];
             return NewsCard(
-              imageUrl: news.imageUrl,
-              category: news.category,
-              title: news.title,
-              date: news.date,
+              imageUrl: article.thumb,
+              category: article.category?.name ?? '',
+              title: article.title,
+              date: article.publishDate,
               onTap: () {
                 Navigator.of(
                   context,
-                ).pushNamed(RouterName.newsDetail, arguments: news);
+                ).pushNamed(RouterName.newsDetail, arguments: article);
               },
               showFavorite: true,
-              isFavorite: news.isFavorite,
+              isFavorite: article.isFavorite,
               onFavoriteTap: () {
-                newsProvider.toggleFavoriteStatus(news.id);
+                newsProvider.toggleFavoriteStatus(article.id);
               },
             );
           },

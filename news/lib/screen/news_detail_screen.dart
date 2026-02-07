@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/news.dart';
+import '../models/article.dart';
 import '../widgets/news_detail/news_detail_content.dart';
 import '../widgets/news_detail/news_detail_header.dart';
 import '../widgets/news_detail/news_detail_more_button.dart';
@@ -10,7 +10,7 @@ class NewsDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final news = ModalRoute.of(context)!.settings.arguments as News;
+    final article = ModalRoute.of(context)!.settings.arguments as Article;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -18,12 +18,11 @@ class NewsDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            NewsDetailHeader(imageUrl: news.imageUrl),
+            NewsDetailHeader(imageUrl: article.thumb),
             NewsDetailContent(
-              title: news
-                  .category, // In the UI, 'Political' (category) is the main title
-              date: news.date,
-              content: news.content,
+              title: article.category?.name ?? '',
+              date: article.publishDate,
+              content: article.content,
             ),
             const NewsDetailMoreButton(),
             const SizedBox(height: 40),

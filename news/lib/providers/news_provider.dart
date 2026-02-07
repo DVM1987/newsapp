@@ -1,204 +1,117 @@
 import 'package:flutter/material.dart';
 
-import '../models/news.dart';
+import '../models/article.dart';
+import '../services/article_service.dart';
 
 class NewsProvider with ChangeNotifier {
-  static final List<News> _sampleData = [
-    News(
-      id: 'n1',
-      imageUrl: 'https://picsum.photos/200/300?random=1',
-      category: 'Thể Thao',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n2',
-      imageUrl: 'https://picsum.photos/200/300?random=2',
-      category: 'Thể Thao',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n3',
-      imageUrl: 'https://picsum.photos/200/300?random=3',
-      category: 'Thể Thao',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n4',
-      imageUrl: 'https://picsum.photos/200/300?random=4',
-      category: 'Thể Thao',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n5',
-      imageUrl: 'https://picsum.photos/200/300?random=5',
-      category: 'Thời Sự',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n6',
-      imageUrl: 'https://picsum.photos/200/300?random=6',
-      category: 'Thời Sự',
-      title:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-      date: 'Mar.5.2023',
-      content:
-          'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
-    ),
-    News(
-      id: 'n7',
-      imageUrl: 'https://picsum.photos/200/300?random=7',
-      category: 'Thế Giới',
-      title:
-          'World News: Major breakthrough in renewable energy production costs',
-      date: 'Mar.6.2023',
-      content:
-          'Renewable energy is becoming cheaper than fossil fuels in most parts of the world...',
-    ),
-    News(
-      id: 'n8',
-      imageUrl: 'https://picsum.photos/200/300?random=8',
-      category: 'Giáo Dục',
-      title: 'Education Today: New online learning platforms reach rural areas',
-      date: 'Mar.6.2023',
-      content:
-          'Thousands of students in rural communities now have access to high-quality education...',
-    ),
-    News(
-      id: 'n9',
-      imageUrl: 'https://picsum.photos/200/300?random=9',
-      category: 'Pháp Luật',
-      title: 'Legal Update: New regulations on data privacy come into effect',
-      date: 'Mar.7.2023',
-      content:
-          'The government has released new guidelines for businesses regarding consumer data protection...',
-    ),
-  ];
-
-  final List<News> _items = [];
+  final ArticleService _articleService = ArticleService();
+  final List<Article> _items = [];
   bool _isLoading = false;
   bool _isFetchingMore = false;
   bool _isInitialLoading = false;
-
   bool _isCategoryLoading = false;
+  int _currentPage = 1;
 
   bool get isLoading => _isLoading;
   bool get isFetchingMore => _isFetchingMore;
   bool get isInitialLoading => _isInitialLoading;
   bool get isCategoryLoading => _isCategoryLoading;
 
-  List<News> get items => [..._items];
+  List<Article> get items => [..._items];
 
-  List<News> get dummyItems => List.generate(
+  List<Article> get dummyItems => List.generate(
     6,
-    (index) => News(
-      id: 'dummy$index',
-      imageUrl: '',
-      category: 'Category placeholder',
+    (index) => Article(
+      id: index,
       title: 'This is a dummy title that should be long enough to occupy lines',
-      date: 'Date placeholder',
-      content: '',
+      description: 'Dummy description',
+      slug: 'dummy-$index',
+      content: 'Dummy content',
+      thumb: '',
+      author: 'Author placeholder',
+      publishDate: 'Date placeholder',
+      status: 1,
+      categoryId: 0,
     ),
   );
 
-  List<News> get favoriteItems =>
-      _items.where((newsItem) => newsItem.isFavorite).toList();
+  List<Article> get favoriteItems =>
+      _items.where((article) => article.isFavorite).toList();
 
   Future<void> initialLoad() async {
     if (_items.isNotEmpty) return;
     _isInitialLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 2));
-    _items.addAll(_sampleData);
-
-    _isInitialLoading = false;
-    notifyListeners();
+    try {
+      _currentPage = 1;
+      final articles = await _articleService.fetchArticles(page: _currentPage);
+      _items.clear();
+      _items.addAll(articles);
+    } catch (e) {
+      debugPrint('Error in initialLoad: $e');
+    } finally {
+      _isInitialLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> loadCategory(String category) async {
+  Future<void> loadCategory(int categoryId) async {
     _isCategoryLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    _isCategoryLoading = false;
-    notifyListeners();
+    try {
+      await _articleService.fetchArticles(categoryId: categoryId);
+      // If we want to replace all items with category items, or just add them?
+      // Usually CategoryScreen calls this, so it might need its own provider state or just return the list.
+      // For now, let's keep it simple.
+    } catch (e) {
+      debugPrint('Error in loadCategory: $e');
+    } finally {
+      _isCategoryLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refresh() async {
     _isLoading = true;
     notifyListeners();
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
 
-    // Add a new item at the beginning
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    _items.insert(
-      0,
-      News(
-        id: id,
-        imageUrl: 'https://picsum.photos/200/300?random=$id',
-        category: 'Thời Sự',
-        title: '[New] Jordan Expresses Its Condolences...',
-        date: 'Just now',
-        content: 'This is a new item from refresh.',
-      ),
-    );
-
-    _isLoading = false;
-    notifyListeners();
+    try {
+      _currentPage = 1;
+      final articles = await _articleService.fetchArticles(page: _currentPage);
+      _items.clear();
+      _items.addAll(articles);
+    } catch (e) {
+      debugPrint('Error in refresh: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadMore() async {
     if (_isFetchingMore) return;
     _isFetchingMore = true;
     notifyListeners();
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
 
-    // Add some duplicate items to simulate more data
-    final newItems = _sampleData.take(2).map((item) {
-      final id = DateTime.now().millisecondsSinceEpoch.toString();
-      return News(
-        id: id,
-        imageUrl: item.imageUrl,
-        category: item.category,
-        title: '[More] ${item.title}',
-        date: item.date,
-        content: item.content,
-      );
-    }).toList();
-
-    _items.addAll(newItems);
-
-    _isFetchingMore = false;
-    notifyListeners();
+    try {
+      _currentPage++;
+      final articles = await _articleService.fetchArticles(page: _currentPage);
+      _items.addAll(articles);
+    } catch (e) {
+      debugPrint('Error in loadMore: $e');
+      _currentPage--;
+    } finally {
+      _isFetchingMore = false;
+      notifyListeners();
+    }
   }
 
-  void toggleFavoriteStatus(String id) {
-    final newsIndex = _items.indexWhere((news) => news.id == id);
-    if (newsIndex >= 0) {
-      _items[newsIndex].isFavorite = !_items[newsIndex].isFavorite;
+  void toggleFavoriteStatus(int id) {
+    final articleIndex = _items.indexWhere((article) => article.id == id);
+    if (articleIndex >= 0) {
+      _items[articleIndex].isFavorite = !_items[articleIndex].isFavorite;
       notifyListeners();
     }
   }

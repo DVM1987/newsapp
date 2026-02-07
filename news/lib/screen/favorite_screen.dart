@@ -13,14 +13,14 @@ class FavoriteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final newsProvider = Provider.of<NewsProvider>(context);
-    final favoriteNews = newsProvider.favoriteItems;
+    final favoriteArticles = newsProvider.favoriteItems;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: 'Yêu Thích',
         actions: [
-          if (favoriteNews.isNotEmpty)
+          if (favoriteArticles.isNotEmpty)
             TextButton(
               onPressed: () {
                 newsProvider.clearAllFavorites();
@@ -37,7 +37,7 @@ class FavoriteScreen extends StatelessWidget {
         ],
       ),
       drawer: const MyDrawer(),
-      body: favoriteNews.isEmpty
+      body: favoriteArticles.isEmpty
           ? const Center(
               child: Text(
                 'Chưa có bài viết yêu thích nào.',
@@ -46,11 +46,11 @@ class FavoriteScreen extends StatelessWidget {
             )
           : ListView.builder(
               padding: const EdgeInsets.only(top: 8),
-              itemCount: favoriteNews.length,
+              itemCount: favoriteArticles.length,
               itemBuilder: (ctx, index) {
-                final news = favoriteNews[index];
+                final article = favoriteArticles[index];
                 return Dismissible(
-                  key: ValueKey(news.id),
+                  key: ValueKey(article.id),
                   direction: DismissDirection.endToStart,
                   background: Container(
                     color: Colors.red,
@@ -60,7 +60,7 @@ class FavoriteScreen extends StatelessWidget {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   onDismissed: (direction) {
-                    newsProvider.toggleFavoriteStatus(news.id);
+                    newsProvider.toggleFavoriteStatus(article.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Đã xóa khỏi danh sách yêu thích'),
@@ -69,19 +69,19 @@ class FavoriteScreen extends StatelessWidget {
                     );
                   },
                   child: NewsCard(
-                    imageUrl: news.imageUrl,
-                    category: news.category,
-                    title: news.title,
-                    date: news.date,
+                    imageUrl: article.thumb,
+                    category: article.category?.name ?? '',
+                    title: article.title,
+                    date: article.publishDate,
                     onTap: () {
                       Navigator.of(
                         context,
-                      ).pushNamed(RouterName.newsDetail, arguments: news);
+                      ).pushNamed(RouterName.newsDetail, arguments: article);
                     },
                     showFavorite: true,
-                    isFavorite: news.isFavorite,
+                    isFavorite: article.isFavorite,
                     onFavoriteTap: () {
-                      newsProvider.toggleFavoriteStatus(news.id);
+                      newsProvider.toggleFavoriteStatus(article.id);
                     },
                   ),
                 );
