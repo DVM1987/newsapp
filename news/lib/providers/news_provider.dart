@@ -64,6 +64,34 @@ class NewsProvider with ChangeNotifier {
       content:
           'Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of Jordan Expresses Its Condolences To The Government And People Of The Friendly Republic Of Indonesia For The Victims Of',
     ),
+    News(
+      id: 'n7',
+      imageUrl: 'https://picsum.photos/200/300?random=7',
+      category: 'Thế Giới',
+      title:
+          'World News: Major breakthrough in renewable energy production costs',
+      date: 'Mar.6.2023',
+      content:
+          'Renewable energy is becoming cheaper than fossil fuels in most parts of the world...',
+    ),
+    News(
+      id: 'n8',
+      imageUrl: 'https://picsum.photos/200/300?random=8',
+      category: 'Giáo Dục',
+      title: 'Education Today: New online learning platforms reach rural areas',
+      date: 'Mar.6.2023',
+      content:
+          'Thousands of students in rural communities now have access to high-quality education...',
+    ),
+    News(
+      id: 'n9',
+      imageUrl: 'https://picsum.photos/200/300?random=9',
+      category: 'Pháp Luật',
+      title: 'Legal Update: New regulations on data privacy come into effect',
+      date: 'Mar.7.2023',
+      content:
+          'The government has released new guidelines for businesses regarding consumer data protection...',
+    ),
   ];
 
   final List<News> _items = [];

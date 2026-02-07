@@ -6,6 +6,7 @@ import '../apps/constants/app_colors.dart';
 import '../apps/routers/router_name.dart';
 import '../models/news.dart';
 import '../providers/news_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/common/news_card.dart';
 import '../widgets/common/section_header.dart';
@@ -59,6 +60,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final newsProvider = Provider.of<NewsProvider>(context);
+    final settingsProvider = Provider.of<SettingsProvider>(context);
+
+    final activeCategories = settingsProvider.categories
+        .where((c) => c.isActive)
+        .toList();
+
     final newsItems = newsProvider.isInitialLoading
         ? newsProvider.dummyItems
         : newsProvider.items;
@@ -77,39 +84,32 @@ class _HomeScreenState extends State<HomeScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               children: [
-                // Thể Thao Section
-                SectionHeader(
-                  title: 'Thể Thao',
-                  onViewAll: () => _navigateToCategory(context, 'Thể Thao'),
-                ),
-                ...newsItems
-                    .take(4)
-                    .map(
-                      (news) => NewsCard(
-                        imageUrl: news.imageUrl,
-                        category: news.category,
-                        title: news.title,
-                        date: news.date,
-                        onTap: () => _navigateToDetail(context, news),
-                        showFavorite: true,
-                        isFavorite: news.isFavorite,
-                        onFavoriteTap: () {
-                          newsProvider.toggleFavoriteStatus(news.id);
-                        },
+                if (activeCategories.isEmpty && !newsProvider.isInitialLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        'No categories selected.\nGo to Settings to select categories.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
                     ),
+                  ),
 
-                const SizedBox(height: 16),
+                ...activeCategories.map((categoryItem) {
+                  final categoryNews = newsItems
+                      .where((n) => n.category == categoryItem.title)
+                      .toList();
 
-                // Thời Sự Section
-                SectionHeader(
-                  title: 'Thời Sự',
-                  onViewAll: () => _navigateToCategory(context, 'Thời Sự'),
-                ),
-                if (newsItems.length > 4 || newsProvider.isInitialLoading)
-                  ...newsItems
-                      .skip(4)
-                      .map(
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SectionHeader(
+                        title: categoryItem.title,
+                        onViewAll: () =>
+                            _navigateToCategory(context, categoryItem.title),
+                      ),
+                      ...categoryNews.map(
                         (news) => NewsCard(
                           imageUrl: news.imageUrl,
                           category: news.category,
@@ -123,6 +123,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                       ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }),
 
                 // Loading indicator when fetching more
                 if (newsProvider.isFetchingMore &&

@@ -58,10 +58,12 @@ class SettingsScreen extends StatelessWidget {
                     backgroundColor: item.color,
                     isActive: item.isActive,
                     onTap: () {
-                      settingsProvider.toggleCategory(item.title);
+                      settingsProvider.toggleCategory(item.id);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Selected: ${item.title}'),
+                          content: Text(
+                            '${item.isActive ? "Selected" : "Deselected"}: ${item.title}',
+                          ),
                           duration: const Duration(seconds: 1),
                         ),
                       );
