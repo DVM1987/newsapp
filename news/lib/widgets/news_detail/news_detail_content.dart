@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 import '../../apps/constants/app_colors.dart';
 
@@ -35,9 +36,9 @@ class NewsDetailContent extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: AppColors.secondary),
           ),
           const SizedBox(height: 16),
-          Text(
+          HtmlWidget(
             content,
-            style: const TextStyle(
+            textStyle: const TextStyle(
               fontSize: 16,
               height: 1.5,
               color: Colors.black87,

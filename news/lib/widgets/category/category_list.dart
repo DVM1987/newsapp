@@ -44,11 +44,16 @@ class _CategoryListState extends State<CategoryList> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 50) {
+        _scrollController.position.maxScrollExtent - 200) {
       final newsProvider = Provider.of<NewsProvider>(context, listen: false);
-      if (!newsProvider.isFetchingMore && !newsProvider.isCategoryLoading) {
-        newsProvider.loadMore();
+
+      // Check if specifically this category is fetching more
+      if (!newsProvider.isFetchingMore(widget.categoryId) &&
+          !newsProvider.isCategoryLoading) {
+        newsProvider.loadMore(widget.categoryId);
       }
     }
   }
@@ -57,14 +62,14 @@ class _CategoryListState extends State<CategoryList> {
   Widget build(BuildContext context) {
     final newsProvider = Provider.of<NewsProvider>(context);
 
+    // Use specific getter for this category
     final newsItems = newsProvider.isCategoryLoading
-        ? newsProvider.dummyItems
-        : newsProvider.items
-              .where((item) => item.categoryId == widget.categoryId)
-              .toList();
+        ? newsProvider
+              .dummyItems // Fallback to dummy items if loading fresh
+        : newsProvider.getArticlesForCategory(widget.categoryId);
 
     return RefreshIndicator(
-      onRefresh: () => newsProvider.refresh(),
+      onRefresh: () => newsProvider.refresh(widget.categoryId),
       color: AppColors.primary,
       child: Skeletonizer(
         enabled: newsProvider.isCategoryLoading,
@@ -72,7 +77,10 @@ class _CategoryListState extends State<CategoryList> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(top: 8),
-          itemCount: newsItems.length + (newsProvider.isFetchingMore ? 1 : 0),
+          // Check specifically this category
+          itemCount:
+              newsItems.length +
+              (newsProvider.isFetchingMore(widget.categoryId) ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == newsItems.length) {
               return const Padding(

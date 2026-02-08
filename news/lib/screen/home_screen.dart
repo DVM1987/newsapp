@@ -19,12 +19,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isDataInitialized = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<NewsProvider>(context, listen: false).initialLoad();
-    });
+    // Logic moved to build/didChangeDependencies to wait for settings
   }
 
   void _navigateToCategory(BuildContext context, int id, String title) {
@@ -42,25 +42,37 @@ class _HomeScreenState extends State<HomeScreen> {
     final newsProvider = Provider.of<NewsProvider>(context);
     final settingsProvider = Provider.of<SettingsProvider>(context);
 
+    // Initial Load Logic depending on Settings
+    if (!settingsProvider.isLoading && !_isDataInitialized) {
+      final activeIds = settingsProvider.categories
+          .where((c) => c.isActive)
+          .map((c) => c.id)
+          .toList();
+      if (activeIds.isNotEmpty) {
+        _isDataInitialized = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          newsProvider.initialLoad(activeIds);
+        });
+      }
+    }
+
     final activeCategories = settingsProvider.categories
         .where((c) => c.isActive)
         .toList();
-
-    final newsItems = newsProvider.isInitialLoading
-        ? newsProvider.dummyItems
-        : newsProvider.items;
 
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: const MyDrawer(),
       appBar: const CustomAppBar(),
       body: Skeletonizer(
-        enabled: newsProvider.isInitialLoading,
+        enabled: newsProvider.isInitialLoading || settingsProvider.isLoading,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
-              if (activeCategories.isEmpty && !newsProvider.isInitialLoading)
+              if (activeCategories.isEmpty &&
+                  !newsProvider.isInitialLoading &&
+                  !settingsProvider.isLoading)
                 const Padding(
                   padding: EdgeInsets.all(32.0),
                   child: Center(
@@ -72,9 +84,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ...activeCategories.map((categoryItem) {
-                final categoryNews = newsItems
-                    .where((n) => n.categoryId == categoryItem.id)
-                    .toList();
+                // Get articles for this category from the map
+                // If loading, use dummy data for skeleton
+                final rawArticles = newsProvider.isInitialLoading
+                    ? newsProvider
+                          .dummyItems // Fallback for skeleton
+                    : (newsProvider.homeArticles[categoryItem.id] ?? []);
+
+                // Show fixed number of 4 articles
+                final categoryNews = rawArticles.take(4).toList();
+
+                // If not loading and no data, maybe hide section?
+                // But user wants to fix specific categories not showing data.
+                // If empty list, rendered maps to empty list of widgets.
+                // Should at least show header? Yes.
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,10 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         categoryItem.title,
                       ),
                     ),
+                    if (categoryNews.isEmpty && !newsProvider.isInitialLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text("No articles found"),
+                      ),
                     ...categoryNews.map(
                       (article) => NewsCard(
                         imageUrl: article.thumb,
-                        category: article.category?.name ?? '',
+                        category: categoryItem
+                            .title, // Use category title from settings as it matches section
                         title: article.title,
                         date: article.publishDate,
                         onTap: () => _navigateToDetail(context, article),

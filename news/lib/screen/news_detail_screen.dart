@@ -4,6 +4,7 @@ import '../models/article.dart';
 import '../widgets/news_detail/news_detail_content.dart';
 import '../widgets/news_detail/news_detail_header.dart';
 import '../widgets/news_detail/news_detail_more_button.dart';
+import '../widgets/news_detail/related_articles_widget.dart';
 
 class NewsDetailScreen extends StatelessWidget {
   const NewsDetailScreen({super.key});
@@ -24,7 +25,12 @@ class NewsDetailScreen extends StatelessWidget {
               date: article.publishDate,
               content: article.content,
             ),
-            const NewsDetailMoreButton(),
+            NewsDetailMoreButton(article: article),
+            const SizedBox(height: 20),
+            RelatedArticlesWidget(
+              categoryId: article.categoryId,
+              currentArticleId: article.id,
+            ),
             const SizedBox(height: 40),
           ],
         ),

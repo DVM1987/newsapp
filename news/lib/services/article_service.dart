@@ -5,14 +5,20 @@ import 'package:http/http.dart' as http;
 import '../models/article.dart';
 
 class ArticleService {
-  static const String _baseUrl =
-      'https://apiforlearning.zendvn.com/api/v2/articles';
+  static const String _baseUrl = 'https://apiforlearning.zendvn.com/api/v2';
 
-  Future<List<Article>> fetchArticles({int? categoryId, int page = 1}) async {
+  Future<List<Article>> fetchArticles({
+    int? categoryId,
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      String url = '$_baseUrl?page=$page';
+      String url;
       if (categoryId != null) {
-        url += '&category_id=$categoryId';
+        url =
+            '$_baseUrl/categories_news/$categoryId/articles?page=$page&limit=$limit';
+      } else {
+        url = '$_baseUrl/articles?page=$page&limit=$limit';
       }
 
       final response = await http.get(Uri.parse(url));

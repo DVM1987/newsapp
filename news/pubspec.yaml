@@ -39,6 +39,8 @@ dependencies:
   skeletonizer: ^2.1.2
   shared_preferences: ^2.5.4
   http: ^1.6.0
+  flutter_widget_from_html: ^0.17.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
