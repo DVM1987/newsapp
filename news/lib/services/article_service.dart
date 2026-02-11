@@ -35,4 +35,26 @@ class ArticleService {
       throw Exception('Error fetching articles: $e');
     }
   }
+
+  Future<List<Article>> searchArticles(
+    String query, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final url = '$_baseUrl/articles/search?q=$query&page=$page&limit=$limit';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> data = responseData['data'] ?? [];
+
+        return data.map((item) => Article.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to search articles: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching articles: $e');
+    }
+  }
 }

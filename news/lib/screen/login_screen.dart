@@ -1,9 +1,10 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../apps/constants/app_colors.dart';
 import '../apps/routers/router_name.dart';
+import '../providers/auth_provider.dart';
+import '../providers/news_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,15 +14,89 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLogin = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
+  }
+
+  void _submit() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text; // Không trim mật khẩu
+    final phone = _phoneController.text.trim();
+    final address = _addressController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    if (!_isLogin && (name.isEmpty || phone.isEmpty || address.isEmpty)) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    bool success;
+    if (_isLogin) {
+      success = await authProvider.login(email, password);
+    } else {
+      success = await authProvider.register(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        address: address,
+      );
+    }
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      if (_isLogin) {
+        // Sync user ID to load favorites
+        Provider.of<NewsProvider>(
+          context,
+          listen: false,
+        ).setUserId(authProvider.userId);
+        Navigator.of(context).pushReplacementNamed(RouterName.home);
+      } else {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful! Please login.'),
+          ),
+        );
+        setState(() => _isLogin = true);
+      }
+    } else {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authProvider.error ?? 'Authentication failed')),
+      );
+    }
   }
 
   @override
@@ -34,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Stack(
               children: [
                 Container(
-                  height: 300,
+                  height: 250,
                   decoration: const BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.only(
@@ -44,13 +119,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Positioned(
-                  top: 80,
+                  top: 60,
                   left: 0,
                   right: 0,
                   child: Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           shape: BoxShape.circle,
@@ -64,15 +139,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: const Icon(
                           Icons.newspaper_rounded,
-                          size: 80,
+                          size: 60,
                           color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 15),
                       const Text(
                         'NEWS APP',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: AppColors.white,
                           letterSpacing: 2,
@@ -84,23 +159,50 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(30.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 30.0,
+                vertical: 20,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Welcome Back!',
-                    style: TextStyle(
+                  Text(
+                    _isLogin ? 'Welcome Back!' : 'Create Account',
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark,
                     ),
                   ),
-                  const Text(
-                    'Please sign in to continue',
-                    style: TextStyle(fontSize: 16, color: AppColors.textGrey),
+                  Text(
+                    _isLogin
+                        ? 'Please sign in to continue'
+                        : 'Sign up to get started',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textGrey,
+                    ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
+                  if (!_isLogin) ...[
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Full Name',
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          color: AppColors.primary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -148,30 +250,67 @@ class _LoginScreenState extends State<LoginScreen> {
                       fillColor: Colors.grey[100],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.w600,
+                  if (!_isLogin) ...[
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _phoneController,
+                      decoration: InputDecoration(
+                        hintText: 'Phone number',
+                        prefixIcon: const Icon(
+                          Icons.phone_outlined,
+                          color: AppColors.primary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        hintText: 'Address',
+                        prefixIcon: const Icon(
+                          Icons.location_on_outlined,
+                          color: AppColors.primary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                      ),
+                    ),
+                  ],
+                  if (_isLogin)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          // Note: This API requires authentication and current password.
+                          Navigator.of(
+                            context,
+                          ).pushNamed(RouterName.changePassword);
+                        },
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).pushReplacementNamed(RouterName.home);
-                      },
+                      onPressed: _isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
@@ -179,29 +318,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 5,
                       ),
-                      child: const Text(
-                        'LOGIN',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              _isLogin ? 'LOGIN' : 'SIGN UP',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.white,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Don't have an account? ",
-                        style: TextStyle(color: AppColors.textGrey),
+                      Text(
+                        _isLogin
+                            ? "Don't have an account? "
+                            : "Already have an account? ",
+                        style: const TextStyle(color: AppColors.textGrey),
                       ),
                       GestureDetector(
-                        onTap: () {},
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
+                        onTap: () {
+                          setState(() {
+                            _isLogin = !_isLogin;
+                          });
+                        },
+                        child: Text(
+                          _isLogin ? 'Sign Up' : 'Login',
+                          style: const TextStyle(
                             color: AppColors.secondary,
                             fontWeight: FontWeight.bold,
                           ),

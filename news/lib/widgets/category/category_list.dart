@@ -4,6 +4,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../apps/constants/app_colors.dart';
 import '../../apps/routers/router_name.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/news_provider.dart';
 import '../common/news_card.dart';
 
@@ -23,6 +24,7 @@ class CategoryList extends StatefulWidget {
 
 class _CategoryListState extends State<CategoryList> {
   final ScrollController _scrollController = ScrollController();
+  bool? _wasLoggedIn;
 
   @override
   void initState() {
@@ -34,6 +36,24 @@ class _CategoryListState extends State<CategoryList> {
         listen: false,
       ).loadCategory(widget.categoryId);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authProvider = Provider.of<AuthProvider>(context);
+    if (_wasLoggedIn != null && _wasLoggedIn != authProvider.isLoggedIn) {
+      // Re-fetch category data when login status changes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Provider.of<NewsProvider>(
+            context,
+            listen: false,
+          ).loadCategory(widget.categoryId);
+        }
+      });
+    }
+    _wasLoggedIn = authProvider.isLoggedIn;
   }
 
   @override
@@ -67,6 +87,33 @@ class _CategoryListState extends State<CategoryList> {
         ? newsProvider
               .dummyItems // Fallback to dummy items if loading fresh
         : newsProvider.getArticlesForCategory(widget.categoryId);
+
+    final error = newsProvider.getCategoryError(widget.categoryId);
+
+    if (error != null && !newsProvider.isCategoryLoading && newsItems.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                error,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, color: Colors.red),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => newsProvider.loadCategory(widget.categoryId),
+                child: const Text("Thử lại"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: () => newsProvider.refresh(widget.categoryId),
@@ -102,9 +149,23 @@ class _CategoryListState extends State<CategoryList> {
                 ).pushNamed(RouterName.newsDetail, arguments: article);
               },
               showFavorite: true,
-              isFavorite: article.isFavorite,
+              isFavorite: newsProvider.isFavorite(article.id),
               onFavoriteTap: () {
-                newsProvider.toggleFavoriteStatus(article.id);
+                final authProvider = Provider.of<AuthProvider>(
+                  context,
+                  listen: false,
+                );
+                if (!authProvider.isLoggedIn) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Vui lòng đăng nhập để sử dụng tính năng này',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                newsProvider.toggleFavoriteStatus(article.id, article: article);
               },
             );
           },

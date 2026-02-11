@@ -33,6 +33,40 @@ class Article {
     this.isFavorite = false,
   });
 
+  Article copyWith({
+    int? id,
+    String? title,
+    String? description,
+    String? slug,
+    String? content,
+    String? thumb,
+    String? link,
+    String? author,
+    int? views,
+    String? publishDate,
+    int? status,
+    int? categoryId,
+    Category? category,
+    bool? isFavorite,
+  }) {
+    return Article(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      slug: slug ?? this.slug,
+      content: content ?? this.content,
+      thumb: thumb ?? this.thumb,
+      link: link ?? this.link,
+      author: author ?? this.author,
+      views: views ?? this.views,
+      publishDate: publishDate ?? this.publishDate,
+      status: status ?? this.status,
+      categoryId: categoryId ?? this.categoryId,
+      category: category ?? this.category,
+      isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
+
   factory Article.fromJson(Map<String, dynamic> json) {
     return Article(
       id: json['id'] ?? 0,
@@ -50,6 +84,7 @@ class Article {
       category: json['category'] != null
           ? Category.fromJson(json['category'])
           : null,
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 
@@ -68,6 +103,15 @@ class Article {
       'status': status,
       'category_id': categoryId,
       'category': category?.toJson(),
+      'isFavorite': isFavorite,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Article && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

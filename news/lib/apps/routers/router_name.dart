@@ -6,4 +6,6 @@ class RouterName {
   static const String favorites = '/favorites';
   static const String newsDetail = '/news-detail';
   static const String settings = '/settings';
+  static const String webView = '/web-view';
+  static const String changePassword = '/change-password';
 }

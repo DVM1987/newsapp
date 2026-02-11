@@ -19,7 +19,7 @@ class NewsDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            NewsDetailHeader(imageUrl: article.thumb),
+            NewsDetailHeader(article: article),
             NewsDetailContent(
               title: article.category?.name ?? '',
               date: article.publishDate,

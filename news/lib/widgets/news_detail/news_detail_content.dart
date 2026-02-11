@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 import '../../apps/constants/app_colors.dart';
+import '../../apps/routers/router_name.dart';
 
 class NewsDetailContent extends StatelessWidget {
   final String title;
@@ -38,6 +39,13 @@ class NewsDetailContent extends StatelessWidget {
           const SizedBox(height: 16),
           HtmlWidget(
             content,
+            onTapUrl: (url) {
+              Navigator.of(context).pushNamed(
+                RouterName.webView,
+                arguments: {'url': url, 'title': title},
+              );
+              return true;
+            },
             textStyle: const TextStyle(
               fontSize: 16,
               height: 1.5,

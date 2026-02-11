@@ -8,9 +8,13 @@ class CategoryService {
   static const String _baseUrl =
       'https://apiforlearning.zendvn.com/api/v2/categories_news';
 
+  final http.Client client;
+
+  CategoryService({http.Client? client}) : client = client ?? http.Client();
+
   Future<List<Category>> fetchCategories() async {
     try {
-      final response = await http.get(Uri.parse(_baseUrl));
+      final response = await client.get(Uri.parse(_baseUrl));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);

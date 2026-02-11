@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../apps/constants/app_colors.dart';
@@ -38,20 +39,33 @@ class NewsCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    imageUrl,
-                    width: 120,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 120,
-                        height: 100,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported),
-                      );
-                    },
-                  ),
+                  child: imageUrl.isEmpty
+                      ? Container(
+                          width: 120,
+                          height: 100,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          width: 120,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 120,
+                            height: 100,
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 120,
+                            height: 100,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.error),
+                          ),
+                        ),
                 ),
                 if (showFavorite)
                   Positioned(

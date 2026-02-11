@@ -1,9 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../apps/constants/app_colors.dart';
 import '../apps/routers/router_name.dart';
+import '../providers/auth_provider.dart';
+import '../providers/news_provider.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
@@ -117,6 +120,49 @@ class MyDrawer extends StatelessWidget {
                 Navigator.of(context).pushReplacementNamed(RouterName.settings);
               },
             ),
+            const Spacer(),
+            Consumer<AuthProvider>(
+              builder: (context, authProvider, child) {
+                final bool isLoggedIn = authProvider.isLoggedIn;
+                return Column(
+                  children: [
+                    if (authProvider.isLoggedIn)
+                      _buildDrawerItem(
+                        context: context,
+                        title: 'Đổi mật khẩu',
+                        color: whiteColor,
+                        onTap: () {
+                          Navigator.of(context).pop(); // Close drawer
+                          Navigator.of(
+                            context,
+                          ).pushNamed(RouterName.changePassword);
+                        },
+                      ),
+                    _buildDrawerItem(
+                      context: context,
+                      title: isLoggedIn ? 'Đăng xuất' : 'Đăng nhập',
+                      color: isLoggedIn ? Colors.redAccent : activeColor,
+                      onTap: () async {
+                        if (isLoggedIn) {
+                          // Clear favorites from memory but keep on disk
+                          await Provider.of<NewsProvider>(
+                            context,
+                            listen: false,
+                          ).setUserId(null);
+                          await authProvider.logout();
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        } else {
+                          Navigator.of(context).pushNamed(RouterName.login);
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),

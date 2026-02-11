@@ -24,9 +24,11 @@ class SettingsProvider with ChangeNotifier {
   final CategoryService _categoryService = CategoryService();
   List<CategoryItem> _categories = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   List<CategoryItem> get categories => _categories;
   bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   SettingsProvider() {
     loadSettings();
@@ -34,6 +36,7 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> loadSettings() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -91,6 +94,7 @@ class SettingsProvider with ChangeNotifier {
       _sortCategories();
     } catch (e) {
       debugPrint('Error loading settings: $e');
+      _errorMessage = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();

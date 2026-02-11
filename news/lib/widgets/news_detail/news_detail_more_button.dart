@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../apps/constants/app_colors.dart';
+import '../../apps/routers/router_name.dart';
 import '../../models/article.dart';
 
 class NewsDetailMoreButton extends StatelessWidget {
@@ -9,14 +9,13 @@ class NewsDetailMoreButton extends StatelessWidget {
 
   const NewsDetailMoreButton({super.key, required this.article});
 
-  Future<void> _launchUrl() async {
-    final url = article.link;
-    if (url == null || url.isEmpty) return;
+  void _launchUrl(BuildContext context) {
+    if (article.link == null || article.link!.isEmpty) return;
 
-    final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $uri');
-    }
+    Navigator.of(context).pushNamed(
+      RouterName.webView,
+      arguments: {'url': article.link, 'title': article.title},
+    );
   }
 
   @override
@@ -37,7 +36,7 @@ class NewsDetailMoreButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: _launchUrl,
+          onPressed: () => _launchUrl(context),
           child: const Text(
             'More',
             style: TextStyle(

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../apps/routers/router_name.dart';
 import '../../models/article.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/news_provider.dart';
 import '../../services/article_service.dart';
 import '../common/news_card.dart';
 
@@ -75,6 +78,7 @@ class _RelatedArticlesWidgetState extends State<RelatedArticlesWidget> {
       return const SizedBox.shrink();
     }
 
+    final newsProvider = Provider.of<NewsProvider>(context);
     const int itemsPerPage = 4;
     final int pageCount = (_articles.length / itemsPerPage).ceil();
 
@@ -103,6 +107,7 @@ class _RelatedArticlesWidgetState extends State<RelatedArticlesWidget> {
                 physics: const NeverScrollableScrollPhysics(),
                 child: Column(
                   children: pageArticles.map((article) {
+                    final isFavorite = newsProvider.isFavorite(article.id);
                     return NewsCard(
                       imageUrl: article.thumb,
                       category: article.category?.name ?? '',
@@ -112,6 +117,28 @@ class _RelatedArticlesWidgetState extends State<RelatedArticlesWidget> {
                         Navigator.of(
                           context,
                         ).pushNamed(RouterName.newsDetail, arguments: article);
+                      },
+                      showFavorite: true,
+                      isFavorite: isFavorite,
+                      onFavoriteTap: () {
+                        final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+                        if (!authProvider.isLoggedIn) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Vui lòng đăng nhập để sử dụng tính năng này',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        newsProvider.toggleFavoriteStatus(
+                          article.id,
+                          article: article,
+                        );
                       },
                     );
                   }).toList(),
