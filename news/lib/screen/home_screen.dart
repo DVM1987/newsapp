@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -23,10 +25,12 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isDataInitialized = false;
   bool _isSearchOpen = false;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   bool? _wasLoggedIn;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -37,13 +41,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // Logic moved to build/didChangeDependencies to wait for settings
   }
 
-  void _navigateToCategory(BuildContext context, int id, String title) {
+  void navigateToCategory(BuildContext context, int id, String title) {
     Navigator.of(
       context,
     ).pushNamed(RouterName.category, arguments: {'id': id, 'title': title});
   }
 
-  void _navigateToDetail(BuildContext context, Article article) {
+  void navigateToDetail(BuildContext context, Article article) {
     Navigator.of(context).pushNamed(RouterName.newsDetail, arguments: article);
   }
 
@@ -103,7 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         onSearchChanged: (value) {
-          newsProvider.search(value);
+          if (_debounce?.isActive ?? false) _debounce!.cancel();
+          _debounce = Timer(const Duration(seconds: 3), () {
+            newsProvider.search(value);
+          });
         },
       ),
       body: Skeletonizer(
@@ -113,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               if (_isSearchOpen)
-                _buildSearchResults(context, newsProvider)
+                buildSearchResults(context, newsProvider)
               else ...[
                 if (activeCategories.isEmpty &&
                     !newsProvider.isInitialLoading &&
@@ -180,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SectionHeader(
                         title: categoryItem.title,
-                        onViewAll: () => _navigateToCategory(
+                        onViewAll: () => navigateToCategory(
                           context,
                           categoryItem.id,
                           categoryItem.title,
@@ -198,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           category: categoryItem.title,
                           title: article.title,
                           date: article.publishDate,
-                          onTap: () => _navigateToDetail(context, article),
+                          onTap: () => navigateToDetail(context, article),
                           showFavorite: true,
                           isFavorite: newsProvider.isFavorite(article.id),
                           onFavoriteTap: () {
@@ -236,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSearchResults(BuildContext context, NewsProvider newsProvider) {
+  Widget buildSearchResults(BuildContext context, NewsProvider newsProvider) {
     if (newsProvider.isSearching) {
       return const Padding(
         padding: EdgeInsets.all(32.0),
@@ -281,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
               category: "Kết quả tìm kiếm",
               title: article.title,
               date: article.publishDate,
-              onTap: () => _navigateToDetail(context, article),
+              onTap: () => navigateToDetail(context, article),
               showFavorite: true,
               isFavorite: newsProvider.isFavorite(article.id),
               onFavoriteTap: () {
